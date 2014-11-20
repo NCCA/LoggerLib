@@ -50,14 +50,16 @@ void *threadFunc(void *arg)
 
 void doThreadTest()
 {
+	//glog.disableLineNumbers();
+	//glog.disableTimeStamp();
 	pthread_t threadID[4];
-	struct argStruct args;
+	struct argStruct args[4];
 
 	for(int i=0; i<4; ++i)
 	{
-		args.arg1=i;
-		args.arg2='a'+i;
-		pthread_create(&threadID[i],0,threadFunc,(void *)&args);
+		args[i].arg1=i;
+		args[i].arg2='a'+i;
+		pthread_create(&threadID[i],0,threadFunc,(void *)&args[i]);
 	}
 	// now join
 
