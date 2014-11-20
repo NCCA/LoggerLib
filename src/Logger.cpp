@@ -5,6 +5,7 @@
 #include <vector>
 #include <boost/iostreams/stream.hpp>
 #include <boost/iostreams/tee.hpp>
+#include <pthread.h>
 
 #include <fstream>
 #include <iostream>
@@ -29,6 +30,7 @@ namespace nccalog
     std::string m_logfileName;
     TeeStream m_output;
     std::ofstream m_file;
+    pthread_mutex_t m_mutex;
 
     Impl(const std::string &_fname);
     void write(const std::string &_text);
@@ -150,6 +152,8 @@ namespace nccalog
 
   void NCCALogger::logMessage(const char *fmt,...)
   {
+    pthread_mutex_lock (&m_impl->m_mutex);
+
     char buffer[1024];
     va_list args;
     va_start (args, fmt);
@@ -158,10 +162,12 @@ namespace nccalog
     va_end (args);
     m_impl->write(text);
     fflush(stdout);
+    pthread_mutex_unlock(&m_impl->m_mutex);
   }
 
   void NCCALogger::logError(const char* fmt,...)
   {
+    pthread_mutex_lock (&m_impl->m_mutex);
     char buffer[1024];
     va_list args;
     va_start (args, fmt);
@@ -172,11 +178,13 @@ namespace nccalog
     va_end (args);
     m_impl->write(text);
     fflush(stdout);
+    pthread_mutex_unlock(&m_impl->m_mutex);
 
   }
 
   void NCCALogger::logWarning(const char* fmt...)
   {
+    pthread_mutex_lock (&m_impl->m_mutex);
     char buffer[1024];
     va_list args;
     va_start (args, fmt);
@@ -187,6 +195,7 @@ namespace nccalog
     va_end (args);
     m_impl->write(text);
     fflush(stdout);
+    pthread_mutex_unlock(&m_impl->m_mutex);
 
   }
 

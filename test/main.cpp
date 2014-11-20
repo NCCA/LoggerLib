@@ -23,74 +23,47 @@ int main()
   log2.logMessage("this is log 2\n");
   for(int i=0; i<20; ++i)
     log2.logError("loop %d\n",i);
-  //doThreadTest();
+
+  doThreadTest();
 }
 nccalog::NCCALogger glog("thread.log");
 
 
-char *sharedMem;
-const static int SIZE=20;
-
-void *starFillerThread(void *arg)
+struct argStruct
 {
-	while(1)
-	{
-	glog.logMessage("Star Filler\n");
-	for(int i=0; i<SIZE; ++i)
-		sharedMem[i]='*';
-	sleep(1);
-	}
+	int arg1;
+	char arg2;
+};
+
+
+void *threadFunc(void *arg)
+{
+	struct argStruct *args = (argStruct *)arg;
+/*	std::cout<<"thread func "<<std::endl;
+	std::cout<<"Arg 1 "<<args->arg1<<std::endl;
+	std::cout<<"Arg 2 "<<args->arg2<<std::endl;
+	*/
+	glog.logMessage("thread function %d %c \n",args->arg1,args->arg2);
+	int ret=args->arg1*2;
 }
 
-void *hashFillerThread(void *arg)
-{
-	while(1)
-	{
-	glog.logMessage("hash filler\n");
-	for(int i=0; i<SIZE; ++i)
-		sharedMem[i]='#';
-	sleep(1);
-	}
-}
-
-
-void *consumerThread(void *arg)
-{
-		while(1)
-		{
-		glog.logMessage("Consumer\n");
-		for(int i=0; i<SIZE; ++i)
-			glog.logMessage("%c",sharedMem[i]);
-		glog.logMessage("\n");
-		sleep(1);
-		}
-}
 
 void doThreadTest()
 {
-	glog.disableColours();
-	glog.disableLineNumbers();
-	glog.disableTimeStamp();
-	sharedMem = new char[SIZE];
-	pthread_t threadID[3];
+	pthread_t threadID[4];
+	struct argStruct args;
 
-	pthread_create(&threadID[0],0,starFillerThread,0);
-	pthread_create(&threadID[1],0,hashFillerThread,0);
-	pthread_create(&threadID[2],0,consumerThread,0);
-
-	pthread_join(threadID[0],0);
-	pthread_join(threadID[1],0);
-	pthread_join(threadID[2],0);
-	int i=0;
-
-	while(i<200)
+	for(int i=0; i<4; ++i)
 	{
-		++i;
-		glog.logWarning("main thread %d\n",i);
+		args.arg1=i;
+		args.arg2='a'+i;
+		pthread_create(&threadID[i],0,threadFunc,(void *)&args);
 	}
+	// now join
 
-
+	int retval;
+	for(int i=0; i<4; ++i)
+	{
+		pthread_join(threadID[i],0);
+	}
 }
-
-
-
