@@ -30,7 +30,7 @@ namespace nccalog
     TeeStream m_output;
     std::ofstream m_file;
 
-    Impl();
+    Impl(const std::string &_fname);
     void write(const std::string &_text);
     std::string currentTime();
     void setColour(enum Colours c);
@@ -42,7 +42,8 @@ namespace nccalog
 
 
 
-  NCCALogger::Impl::Impl(): m_logFileAndConsole(false),
+  NCCALogger::Impl::Impl(const std::string &_fname):
+                            m_logFileAndConsole(false),
                             m_logFile(true),
                             m_logConsole(false),
                             m_timeStamp(true),
@@ -50,7 +51,7 @@ namespace nccalog
                             m_disableColours(false),
                             m_lineNumberCount(0),
                             m_colour(RESET),
-                            m_logfileName("output.log")
+                            m_logfileName(_fname)
   {
 
     m_file.open(m_logfileName.c_str() );
@@ -122,13 +123,19 @@ namespace nccalog
 
 
 
-  NCCALogger::NCCALogger() : m_impl(new NCCALogger::Impl())
+  NCCALogger::NCCALogger() : m_impl(new NCCALogger::Impl("output.log"))
   {
     m_impl->setColour(BLUE);
     m_impl->m_output<<"NCCALogger started "<<m_impl->currentTime()<<"\n";
     m_impl->setColour(RESET);
   }
 
+  NCCALogger::NCCALogger(const std::string &_fname) : m_impl(new NCCALogger::Impl(_fname))
+  {
+    m_impl->setColour(BLUE);
+    m_impl->m_output<<"NCCALogger started "<<m_impl->currentTime()<<"\n";
+    m_impl->setColour(RESET);
+  }
 
   NCCALogger::~NCCALogger()
   {

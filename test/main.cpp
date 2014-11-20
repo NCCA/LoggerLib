@@ -6,7 +6,7 @@
 int main()
 {
   nccalog::NCCALogger log;
-  nccalog::NCCALogger log2;
+  nccalog::NCCALogger log2("log2.log");
 
   //log.enableLogToFileAndConsole();
   //log.disableLineNumbers();

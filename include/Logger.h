@@ -29,7 +29,9 @@ namespace nccalog
       void disableColours();
       void enableColours();
       NCCALogger();
+      NCCALogger(const std::string &_fname);
       ~NCCALogger();
+
     private :
       class Impl;
       boost::scoped_ptr<Impl> m_impl;
