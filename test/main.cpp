@@ -16,11 +16,17 @@ int main()
   //log.disableColours();
   log.logMessage("Simple String\n");
   log.setColour(nccalog::YELLOW);
+  log.setTimeFormat(nccalog::TIMEDATEDAY);
   log.logMessage("printf style %d %c %f %f\n", 3, 'a', 1.999, 42.5);
   log.logError(" this is an error\n");
   log.logWarning(" this is a warning\n");
+
   log2.setColour(nccalog::MAGENTA);
-  log2.logMessage("this is log 2\n");
+  log2.setLogFile("Log2New.log");
+  log2.logMessage("this is log 2 in a new file\n");
+  log2.setLineNumberPad(2);
+  log2.setTimeFormat(nccalog::TIMEDATE);
+
   for(int i=0; i<20; ++i)
     log2.logError("loop %d\n",i);
 

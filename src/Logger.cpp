@@ -2,6 +2,7 @@
 #include <cstdarg>
 #include <vector>
 #include <pthread.h>
+#include <boost/format.hpp>
 
 
 namespace nccalog
@@ -18,14 +19,18 @@ namespace nccalog
     bool m_lineNumber;
     bool m_disableColours;
     unsigned int m_lineNumberCount;
+    unsigned int m_pad;
     Colours m_colour;
     std::string m_logfileName;
     TeeStream m_output;
     std::ofstream m_file;
     pthread_mutex_t m_mutex;
+    std::string m_timeString;
 
     Impl(const std::string &_fname);
     void write(const std::string &_text);
+    void writeLineNumber();
+    void writeTimeStamp();
     std::string currentTime();
     void setColour(enum Colours c);
 
@@ -44,52 +49,68 @@ namespace nccalog
                             m_lineNumber(true),
                             m_disableColours(false),
                             m_lineNumberCount(0),
+                            m_pad(4),
                             m_colour(RESET),
                             m_logfileName(_fname)
   {
 
     m_file.open(m_logfileName.c_str() );
-     if(!m_file.is_open())
-     {
-       std::cerr<<"error opening log file for writing\n";
-       exit(EXIT_FAILURE);
-     }
-       Tee tee( std::cout, m_file );
+    if(!m_file.is_open())
+    {
+     std::cerr<<"error opening log file for writing\n";
+     exit(EXIT_FAILURE);
+    }
+     Tee tee( std::cout, m_file );
 
-       m_output.open(tee);
-       m_output.set_auto_close(true);
+     m_output.open(tee);
+     m_output.set_auto_close(true);
 
     if( !m_output.is_open())
     {
       std::cerr<<"problem opening log stream tee\n";
       exit(EXIT_FAILURE);
     }
-
-
+    m_timeString="%I:%M%p";
   }
   std::string NCCALogger::Impl::currentTime()
   {
   std::string timeStr;
   time_t rawTime;
+  struct tm * timeinfo;
+  char buffer [80];
   time( & rawTime );
   timeStr = ctime( &rawTime );
+  timeinfo = localtime (&rawTime);
   //without the newline character
-  return timeStr.substr( 0 , timeStr.size() - 1 );
+   strftime (buffer,80,m_timeString.c_str(),timeinfo);
+  return buffer;
+  }
+
+
+  void NCCALogger::Impl::writeLineNumber()
+  {
+    setColour(m_colour);
+    if(m_lineNumber == true)
+    {
+      std::string st=boost::str(boost::format("%%0%dd") %m_pad );
+      std::string t=boost::str(boost::format(st.c_str()) %++m_lineNumberCount);
+      m_output<<t<<" ";
+    }
+  }
+  void NCCALogger::Impl::writeTimeStamp()
+  {
+    setColour(m_colour);
+
+    if(m_timeStamp==true)
+    {
+      m_output<<currentTime()<<" ";
+    }
   }
 
   void NCCALogger::Impl::write(const std::string &_text)
   {
     setColour(m_colour);
-    if(m_lineNumber == true)
-    {
-      m_output<< ++m_lineNumberCount<<" ";
-    }
-    if(m_timeStamp==true)
-    {
-      m_output<<currentTime()<<" ";
-    }
     m_output<<_text;
-
   }
 
   // from http://stackoverflow.com/questions/3585846/color-text-in-terminal-aplications-in-unix
@@ -145,7 +166,8 @@ namespace nccalog
   void NCCALogger::logMessage(const char *fmt,...)
   {
     pthread_mutex_lock (&m_impl->m_mutex);
-
+    m_impl->writeLineNumber();
+    m_impl->writeTimeStamp();
     char buffer[1024];
     va_list args;
     va_start (args, fmt);
@@ -160,6 +182,8 @@ namespace nccalog
   void NCCALogger::logError(const char* fmt,...)
   {
     pthread_mutex_lock (&m_impl->m_mutex);
+    m_impl->writeLineNumber();
+    m_impl->writeTimeStamp();
     char buffer[1024];
     va_list args;
     va_start (args, fmt);
@@ -177,6 +201,8 @@ namespace nccalog
   void NCCALogger::logWarning(const char* fmt...)
   {
     pthread_mutex_lock (&m_impl->m_mutex);
+    m_impl->writeLineNumber();
+    m_impl->writeTimeStamp();
     char buffer[1024];
     va_list args;
     va_start (args, fmt);
@@ -225,6 +251,31 @@ namespace nccalog
   }
   void NCCALogger::setLogFile(const std::string &_fname)
   {
+    // close the file
+    m_impl->m_output.flush();
+    m_impl->m_output.close();
+
+    m_impl->m_file.close();
+    m_impl->m_logfileName=_fname;
+    m_impl->m_file.open(m_impl->m_logfileName.c_str() );
+    if(!m_impl->m_file.is_open())
+    {
+     std::cerr<<"error opening log file for writing\n";
+     exit(EXIT_FAILURE);
+    }
+     Tee tee( std::cout, m_impl->m_file );
+
+     m_impl->m_output.open(tee);
+     m_impl->m_output.set_auto_close(true);
+
+    if( !m_impl->m_output.is_open())
+    {
+      std::cerr<<"problem opening log stream tee\n";
+      exit(EXIT_FAILURE);
+    }
+
+
+
 
   }
   void NCCALogger::setColour(Colours _c)
@@ -259,13 +310,24 @@ namespace nccalog
     m_impl->m_disableColours=false;
   }
 
-
+  void NCCALogger::setLineNumberPad(unsigned int _i)
+  {
+    m_impl->m_pad=_i;
+  }
 
   boost::iostreams::stream<NCCALogger::Tee> &NCCALogger::cout()
   {
     return m_impl->m_output;
   }
 
-
-
+//Fri Nov 21 12:20:09 2014
+  void NCCALogger::setTimeFormat(TimeFormat _f)
+  {
+    switch(_f)
+    {
+      case TIME : m_impl->m_timeString="%I:%M%p"; break;
+      case TIMEDATE : m_impl->m_timeString="%R %D"; break;
+      case TIMEDATEDAY :m_impl->m_timeString="%c"; break;
+    }
+  }
 }
