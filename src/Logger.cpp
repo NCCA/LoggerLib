@@ -1,22 +1,14 @@
 #include "Logger.h"
-#include <iostream>
-#include <ostream>
 #include <cstdarg>
 #include <vector>
-#include <boost/iostreams/stream.hpp>
-#include <boost/iostreams/tee.hpp>
 #include <pthread.h>
 
-#include <fstream>
-#include <iostream>
 
 namespace nccalog
 {
   // PIMPL Idiom to make lib cleaner
   class NCCALogger::Impl
   {
-    typedef boost::iostreams::tee_device<std::ostream, std::ofstream > Tee;
-    typedef boost::iostreams::stream<Tee> TeeStream;
 
   public:
     bool m_logFileAndConsole;
@@ -266,5 +258,14 @@ namespace nccalog
   {
     m_impl->m_disableColours=false;
   }
+
+
+
+  boost::iostreams::stream<NCCALogger::Tee> &NCCALogger::cout()
+  {
+    return m_impl->m_output;
+  }
+
+
 
 }

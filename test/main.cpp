@@ -9,7 +9,7 @@ int main()
 {
   nccalog::NCCALogger log;
   nccalog::NCCALogger log2("log2.log");
-
+  log.cout()<<"testing extraction\n"<<"Should work with all types "<<1<<1.5<<'c'<<std::endl;
   //log.enableLogToFileAndConsole();
   //log.disableLineNumbers();
   //log.disableTimeStamp();
@@ -24,7 +24,7 @@ int main()
   for(int i=0; i<20; ++i)
     log2.logError("loop %d\n",i);
 
-  doThreadTest();
+  //doThreadTest();
 }
 nccalog::NCCALogger glog("thread.log");
 

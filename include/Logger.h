@@ -2,6 +2,12 @@
 #define LOGGER_H__
 #include <boost/scoped_ptr.hpp>
 #include <cstdarg>
+#include <iostream>
+#include <ostream>
+#include <fstream>
+
+#include <boost/iostreams/stream.hpp>
+#include <boost/iostreams/tee.hpp>
 
 namespace nccalog
 {
@@ -31,6 +37,10 @@ namespace nccalog
       NCCALogger();
       NCCALogger(const std::string &_fname);
       ~NCCALogger();
+      typedef boost::iostreams::tee_device<std::ostream, std::ofstream > Tee;
+      typedef boost::iostreams::stream<Tee> TeeStream;
+
+      boost::iostreams::stream<NCCALogger::Tee> &cout();
 
     private :
       class Impl;
@@ -38,7 +48,6 @@ namespace nccalog
 
 
   };
-
 
 } // end namespace
 
