@@ -15,7 +15,7 @@ int main()
   //log.disableTimeStamp();
   //log.disableColours();
   log.logMessage("Simple String\n");
-  log.setColour(nccalog::YELLOW);
+  log.setColour(nccalog::CYAN);
   log.setTimeFormat(nccalog::TIMEDATEDAY);
   log.logMessage("printf style %d %c %f %f\n", 3, 'a', 1.999, 42.5);
   log.logError(" this is an error\n");

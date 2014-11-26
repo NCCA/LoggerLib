@@ -5,10 +5,10 @@
 #include <iostream>
 #include <ostream>
 #include <fstream>
-
 #include <boost/iostreams/stream.hpp>
 #include <boost/iostreams/tee.hpp>
 
+/// @brief logger class for writing to stream and file.
 namespace nccalog
 {
   enum Colours{NORMAL,RED,GREEN ,YELLOW,BLUE,MAGENTA,CYAN,WHITE,RESET};
