@@ -64,7 +64,7 @@ void MainWindow::on_action_Open_triggered()
  */
 void MainWindow::setColour(const QString &s)
 {
-  if(s.indexOf("\x1B[0m")!=-1)
+  if(s.indexOf("\x1B[34m")!=-1)
     ui->textEdit->setTextColor(Qt::blue);
   else if(s.indexOf("\x1B[0m")!=-1)
     ui->textEdit->setTextColor(Qt::black);
@@ -74,7 +74,7 @@ void MainWindow::setColour(const QString &s)
     ui->textEdit->setTextColor(Qt::yellow);
   else if(s.indexOf("\x1B[31m")!=-1)
     ui->textEdit->setTextColor(Qt::red);
-  else if(s.indexOf("\x1B[32m")!=-1)
+   else if(s.indexOf("\x1B[32m")!=-1)
     ui->textEdit->setTextColor(Qt::green);
   else if(s.indexOf("\x1B[35m")!=-1)
     ui->textEdit->setTextColor(Qt::magenta);
@@ -88,27 +88,42 @@ void MainWindow::setColour(const QString &s)
 void MainWindow::processTextColour(const QString &_s)
 {
 
+
   QRegExp escape("\[[0-9;]*m| \033\[[0-9]*m");
   QString s=_s;
-  do
+  // two cases we either have a string with no colour info so just print
+  // otherwise split and process for the different colours etc
+  if( s.indexOf(escape) == -1)
   {
-  std::cout<<"initial string "<<s.toStdString()<<"\n";
-  int index=s.indexOf(escape);
-  int length=escape.matchedLength();
-  std::cout<<length<<"\n";
-  int end=s.indexOf(QRegExp("\[[0-9;]*m| \033\[[0-9]*m"),length);
-  std::cout<<"start "<<index+length<<" "<<(end == -1 ?  s.length() : end)<<"\n";
-  QString output=s.mid(index+length,end == -1 ?  s.length() : end);
-  setColour(s);
-  std::cout<<"output string is "<<output.toStdString()<<"\n";
-  if(index==-1 or end==-1)
-    break;
-  QTextCursor cursor( ui->textEdit->textCursor() );
-  //ui->textEdit->insertText(output);
-  s=s.mid(end+1,s.length());
-  cursor.insertText( s );
-  cursor.insertText( QString("\n") );
-  std::cout<<"new string "<<s.toStdString()<<"\n";
-  }  while(s.length() !=0);
+    QTextCursor cursor( ui->textEdit->textCursor() );
+    cursor.insertText( s );
+    cursor.insertText( QString("\n") );
+  }
+  else
+  {
+    QTextCursor cursor( ui->textEdit->textCursor() );
+    do
+    {
+      // first set the colour from the first escape string
+      setColour(s);
+      //  now we need to find the substring to print
+      // it could be the rest of the string
+      int newStringStart=s.indexOf(escape);
+      int length=escape.matchedLength();
 
+      int start=newStringStart+length;
+
+      if (start <0 )
+        start=0;
+
+      int newStringEnd=s.indexOf(escape,start);
+      int end=newStringEnd;
+      if(end == -1)
+        end=s.length();
+      QString output=s.mid(start,(end+1)-start);
+      cursor.insertText( output );
+      s=s.mid(end+1,s.length());
+    }while(s.length() !=0);
+    cursor.insertText( QString("\n") );
+  }
 }

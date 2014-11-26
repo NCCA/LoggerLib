@@ -8,7 +8,7 @@ void doThreadTest();
 int main()
 {
   nccalog::NCCALogger log;
-  nccalog::NCCALogger log2("log2.log");
+//  nccalog::NCCALogger log2("log2.log");
   log.cout()<<"testing extraction\n"<<"Should work with all types "<<1<<1.5<<'c'<<std::endl;
   //log.enableLogToFileAndConsole();
   //log.disableLineNumbers();
@@ -20,7 +20,7 @@ int main()
   log.logMessage("printf style %d %c %f %f\n", 3, 'a', 1.999, 42.5);
   log.logError(" this is an error\n");
   log.logWarning(" this is a warning\n");
-
+/*
   log2.setColour(nccalog::MAGENTA);
   log2.setLogFile("Log2New.log");
   log2.logMessage("this is log 2 in a new file\n");
@@ -29,7 +29,7 @@ int main()
 
   for(int i=0; i<20; ++i)
     log2.logError("loop %d\n",i);
-
+*/
   //doThreadTest();
 }
 nccalog::NCCALogger glog("thread.log");
